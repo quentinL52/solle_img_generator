@@ -1,40 +1,22 @@
-from fastapi import FastAPI, HTTPException, Response
-from pydantic import BaseModel
-from src.solle_img_generation import imggenrator
-from prompt_from_tweet.main import generate_image_prompt_from_tweet
-import io
-from PIL import Image
-import base64
+import os
+import google.generativeai as genai
+from .config import load_prompt_template
 
-app = FastAPI(title="Solle Image Generation API")
+class ImgGenerator:
+    def __init__(self):
+        self.api_key = os.getenv("IMG_GEN_API_KEY")
+        self.model_name = os.getenv("MODEL")
+        genai.configure(api_key=self.api_key)
+        self.model = genai.GenerativeModel(self.model_name)
 
-INPUT_IMAGE_PATH = "solle_base.jpg"
-SOLANA_LOGO_PATH = "solana_logo.png"
+    def generate(self, base_image_path: str, solana_logo_path: str, user_prompt: str):
+        full_prompt = load_prompt_template(base_image_path, solana_logo_path, user_prompt)
+        if not full_prompt:
+            raise ValueError("Le prompt généré est vide")
+        result = self.model.generate_image(
+            prompt=full_prompt,
+            image_inputs=[base_image_path, solana_logo_path] if solana_logo_path else [base_image_path]
+        )
 
-
-class TweetRequest(BaseModel):
-    tweet: str
-
-@app.post("/generate-image")
-def generate_image(request: TweetRequest):
-    tweet_text = request.tweet.strip()
-    if not tweet_text:
-        raise HTTPException(status_code=400, detail="Le tweet ne peut pas être vide.")
-
-    try:
-        prompt_img = generate_image_prompt_from_tweet(tweet_text)
-        model = imggenrator()
-        generated_images = model.generate(INPUT_IMAGE_PATH, SOLANA_LOGO_PATH, prompt_img)
-
-        if not generated_images:
-            raise HTTPException(status_code=500, detail="Aucune image générée.")
-        img_data = generated_images[0]
-        image = Image.open(io.BytesIO(img_data))
-
-        buf = io.BytesIO()
-        image.save(buf, format="PNG")
-        buf.seek(0)
-        return Response(content=buf.getvalue(), media_type="image/png")
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la génération : {str(e)}")
+        image_data = result[0].b64_image
+        return [base64.b64decode(image_data)]
