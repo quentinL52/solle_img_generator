@@ -1,6 +1,6 @@
 import os
 import mimetypes
-from google import genai
+from google.genai import Client, types
 from google.genai import types
 from .config import load_prompt_template
 
@@ -45,4 +45,5 @@ class imggenrator:
                         generated_images_data.append(part.inline_data.data)
                     elif hasattr(part, "text") and part.text:
                         print(part.text)
+
         return generated_images_data
