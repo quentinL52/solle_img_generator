@@ -29,5 +29,6 @@ class imggenrator:
         
         if not result.candidates or not result.candidates[0].content.parts:
             raise RuntimeError("No content returned by the model")
-        image_data = result.candidates[0].content.parts[0].data
+        image_data = result.candidates[0].content.parts[0].inline_data.data
         return [image_data]
+
