@@ -33,9 +33,9 @@ def generate_image(request: TweetRequest) -> Response:
         prompt_img = generate_image_prompt_from_tweet(tweet_text)
         model = imggenrator()
         generated_images = model.generate(
-            base_img_path=INPUT_IMAGE_PATH, 
-            logo_path=SOLANA_LOGO_PATH, 
-            prompt=prompt_img
+            base_image_path=INPUT_IMAGE_PATH, 
+            solana_logo_path=SOLANA_LOGO_PATH, 
+            user_input_text=prompt_img
         )
         if not generated_images or not generated_images[0]:
             # Code d'erreur 500 pour un problème côté serveur (Internal Server Error)
@@ -53,3 +53,4 @@ def generate_image(request: TweetRequest) -> Response:
     except Exception as e:
         print(f"Erreur inattendue lors de la génération: {e}") # Ajout d'un log pour le débogage serveur
         raise HTTPException(status_code=500, detail=f"Erreur lors de la génération : {type(e).__name__}: {str(e)}")
+
