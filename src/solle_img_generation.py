@@ -7,7 +7,7 @@ from .config import load_prompt_template
 class imggenrator:
     def __init__(self):
         self.api_key = os.getenv("IMG_GEN_API_KEY")
-        self.model_name = os.getenv("MODEL", "gemini-1.5-flash")  # Default fallback
+        self.model_name = os.getenv("MODEL")  # Default fallback
         genai.configure(api_key=self.api_key)
         self.model = genai.GenerativeModel(self.model_name)
 
@@ -34,4 +34,5 @@ class imggenrator:
         )
         image_data = result.candidates[0].content.parts[0].data
         return [image_data]
+
 
