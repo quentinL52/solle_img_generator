@@ -13,7 +13,7 @@ tweet_analyzer = Agent(
 
 image_prompt_writer = Agent(
     role="Rédacteur de Prompt Visuel",
-    goal="Créer un prompt descriptif et artistique pour un générateur d'images, en intégrant un personnage de référence à une scène basée sur l'analyse d'un tweet.",
+    goal="Créer un prompt descriptif et artistique pour un générateur d'images, en intégrant un personnage de référence à une scène basée sur l'analyse d'un tweet, tu doit utiliser des background creatifs et en lien avec le tweet ou le contexte",
     backstory="Spécialiste en prompt engineering pour IA générative visuelle. Expert dans la fusion d'un personnage avec de nouvelles situations.",
     verbose=True,
     llm=LLM
@@ -67,4 +67,5 @@ class TweetToImageCrew:
 
     def run(self, tweet_text: str) -> str:
         result = self.crew.kickoff(inputs={'tweet_text': tweet_text})
+
         return result
