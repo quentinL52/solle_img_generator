@@ -4,7 +4,7 @@ import google.generativeai as genai
 from .config import load_prompt_template
 
 
-class ImgGenerator:
+class imggenrator:
     def __init__(self):
         self.api_key = os.getenv("IMG_GEN_API_KEY")
         self.model_name = os.getenv("MODEL", "gemini-1.5-flash")  # Default fallback
@@ -34,3 +34,4 @@ class ImgGenerator:
         )
         image_data = result.candidates[0].content.parts[0].data
         return [image_data]
+
