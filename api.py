@@ -17,6 +17,7 @@ class ImgGenerator:
             prompt=full_prompt,
             image_inputs=[base_image_path, solana_logo_path] if solana_logo_path else [base_image_path]
         )
-
+        #adaptation de la generation d'image
         image_data = result[0].b64_image
         return [base64.b64decode(image_data)]
+
