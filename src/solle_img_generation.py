@@ -2,7 +2,7 @@ import os
 import mimetypes
 import google.generativeai as genai
 from .config import load_prompt_template
-
+from PIL import Image
 
 class imggenrator:
     def __init__(self):
@@ -44,6 +44,7 @@ class imggenrator:
 
         image_data = result.candidates[0].content.parts[0].data
         return [image_data]
+
 
 
 
