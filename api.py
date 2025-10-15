@@ -1,23 +1,55 @@
-import os
-import google.generativeai as genai
-from .config import load_prompt_template
+from fastapi import FastAPI, HTTPException, Response
+from pydantic import BaseModel
+import io
+from PIL import Image
+import base64 # Importation conservée bien qu'inutilisée dans le code fourni
+from src.solle_img_generation import imggenrator
+from prompt_from_tweet.main import generate_image_prompt_from_tweet
 
-class ImgGenerator:
-    def __init__(self):
-        self.api_key = os.getenv("IMG_GEN_API_KEY")
-        self.model_name = os.getenv("MODEL")
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel(self.model_name)
+APP_TITLE = "Solle Image Generation API"
+INPUT_IMAGE_PATH = "solle_base.jpg"
+SOLANA_LOGO_PATH = "solana_logo.png"
 
-    def generate(self, base_image_path: str, solana_logo_path: str, user_prompt: str):
-        full_prompt = load_prompt_template(base_image_path, solana_logo_path, user_prompt)
-        if not full_prompt:
-            raise ValueError("Le prompt généré est vide")
-        result = self.model.generate_image(
-            prompt=full_prompt,
-            image_inputs=[base_image_path, solana_logo_path] if solana_logo_path else [base_image_path]
+app = FastAPI(title=APP_TITLE)
+
+class TweetRequest(BaseModel):
+    tweet: str
+
+@app.post("/generate-image", 
+          summary="solle img generator from a tweet",
+          response_description="Image PNG generated")
+def generate_image(request: TweetRequest) -> Response:
+    """
+    take a tweet in entry turn it into a prompt then generate an image from it !
+    """
+    tweet_text = request.tweet.strip()
+    
+    # Validation du texte du tweet
+    if not tweet_text:
+        # Code d'erreur 400 pour mauvaise requête (Bad Request)
+        raise HTTPException(status_code=400, detail="Le tweet ne peut pas être vide.")
+
+    try:
+        prompt_img = generate_image_prompt_from_tweet(tweet_text)
+        model = imggenrator()
+        generated_images = model.generate(
+            base_img_path=INPUT_IMAGE_PATH, 
+            logo_path=SOLANA_LOGO_PATH, 
+            prompt=prompt_img
         )
-        #adaptation de la generation d'image
-        image_data = result[0].b64_image
-        return [base64.b64decode(image_data)]
+        if not generated_images or not generated_images[0]:
+            # Code d'erreur 500 pour un problème côté serveur (Internal Server Error)
+            raise HTTPException(status_code=500, detail="Aucune image générée ou données d'image invalides.")
+        
+        img_data = generated_images[0]
+        image = Image.open(io.BytesIO(img_data))
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        buffer.seek(0)
+        return Response(content=buffer.getvalue(), media_type="image/png")
 
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur inattendue lors de la génération: {e}") # Ajout d'un log pour le débogage serveur
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la génération : {type(e).__name__}: {str(e)}")
