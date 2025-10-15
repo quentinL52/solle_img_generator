@@ -1,5 +1,6 @@
 import os
 import mimetypes
+from google import genai
 from google.generativeai import types
 from .config import load_prompt_template
 
@@ -46,5 +47,6 @@ class imggenrator:
                         print(part.text)
 
         return generated_images_data
+
 
 
