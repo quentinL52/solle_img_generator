@@ -25,7 +25,6 @@ class imggenrator:
 
         parts = [base_image]
 
-        # Charger le logo Solana s'il existe
         if solana_logo_path:
             with open(solana_logo_path, "rb") as f:
                 logo_image = {
@@ -34,24 +33,18 @@ class imggenrator:
                 }
             parts.append(logo_image)
 
-        # Charger le prompt
         full_prompt = load_prompt_template(base_image_path, solana_logo_path, user_input_text)
         if not full_prompt:
             raise ValueError("load_prompt_template returned None or empty string")
         parts.append(full_prompt)
 
-        # Générer l'image
-        result = self.model.generate_content(
-            parts,
-            generation_config={"response_mime_type": "image/png"},
-        )
-
-        # Extraire les données de l'image
+        result = self.model.generate_content(parts)
         if not result.candidates or not result.candidates[0].content.parts:
             raise RuntimeError("No content returned by the model")
 
         image_data = result.candidates[0].content.parts[0].data
         return [image_data]
+
 
 
 
