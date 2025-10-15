@@ -13,7 +13,8 @@ tweet_analyzer = Agent(
 
 image_prompt_writer = Agent(
     role="Rédacteur de Prompt Visuel",
-    goal="Créer un prompt descriptif et artistique pour un générateur d'images, en intégrant un personnage de référence à une scène basée sur l'analyse d'un tweet, tu doit utiliser des background creatifs et en lien avec le tweet ou le contexte, le background doit avoir un rapport avec les elements du tweet et il faut imperativement tout interpreter pour pouvoir generer une image qui correspondent le plus au tweet",
+    goal="""Créer un prompt descriptif et artistique pour un générateur d'images, en intégrant un personnage de référence (avec vêtements et accessoires pertinents si nécessaire) à une scène variée (paysage, intérieur thématique, etc.) basée sur l'analyse d'un tweet. Le background doit être créatif, en lien direct avec le sujet et le contexte du tweet pour une interprétation visuelle fidèle.
+    """,
     backstory="Spécialiste en prompt engineering pour IA générative visuelle. Expert dans la fusion d'un personnage avec de nouvelles situations.",
     verbose=True,
     llm=LLM
@@ -21,7 +22,7 @@ image_prompt_writer = Agent(
 
 analyze_task = Task(
     description="Analyse le tweet : {tweet_text}. Identifie le sujet, l’ambiance et les éléments visuels liés à Solana.",
-    expected_output="Analyse structurée du tweet, incluant le sujet (ex: 'rumeurs d'investissement'), l'ambiance (ex: 'bullish', 'optimiste'), et les éléments visuels (ex: 'graphiques financiers', 'logos Solana'). N'inclure aucune mention d'autres blockchains.",
+    expected_output="Analyse structurée du tweet, incluant le sujet (ex: 'événement communautaire', 'développement technique', 'annonce majeure'), l'ambiance (ex: 'joyeux', 'pressé', 'sérieux', 'optimiste'), et les éléments visuels clairs (ex: 'personnages en fête', 'paysage futuriste', 'graphiques financiers', 'logos Solana'). N'inclure aucune mention d'autres blockchains.",
     agent=tweet_analyzer
 )
 
@@ -44,16 +45,16 @@ generate_prompt_task = Task(
     Consignes :
     - Fais apparaître le personnage de référence dans le prompt.
     - Intègre-le dans la scène décrite par l'analyse du tweet.
-    - Le personnage doit interagir avec les éléments visuels du tweet (ex: 'le monstre violet examine un graphique boursier Solana').
+    # MISE À JOUR DE LA CONSIGNE pour l'interaction et les accessoires
+    - Le personnage doit être mis en scène de manière pertinente par rapport aux éléments visuels du tweet (ex: 'le monstre violet célèbre un jalon important', 'le monstre violet se promène dans un décor inattendu'). Il peut porter des vêtements ou des accessoires pour contextualiser la scène.
     - Assure-toi que les proportions corporelles sont réalistes et cohérentes, en particulier le cou qui doit être proportionnel à la tête et aux épaules.
     - Si le logo de Solana doit être inclus (contexte de 'include_logo_task'), fais en sorte qu'il apparaisse dans le prompt.
     - Mentionne uniquement Solana et évite toute autre crypto-monnaie.
     """,
-    expected_output="Prompt d'image optimisé, incluant le personnage de référence, le sujet lié à Solana, et le logo de Solana si applicable. Par exemple : 'Le monstre violet de l'image de référence, vêtu d'un costume d'homme d'affaires, est assis à un bureau avec un graphique boursier de Solana. Le logo de Solana est visible sur l'écran.'",
+    expected_output="""Prompt d'image optimisé, incluant le personnage de référence, le sujet lié à Solana, et le logo de Solana si applicable. Par exemple : 'Le monstre violet de l'image de référence, vêtu d'une chemise hawaïenne et de lunettes de soleil, est allongé sur un transat sur une plage paradisiaque au coucher du soleil, avec le logo Solana visible sur un panneau lumineux en arrière-plan.'""",
     agent=image_prompt_writer,
     context=[analyze_task, describe_character_task, include_logo_task]
 )
-
 
 class TweetToImageCrew:
     def __init__(self):
@@ -69,4 +70,3 @@ class TweetToImageCrew:
         result = self.crew.kickoff(inputs={'tweet_text': tweet_text})
 
         return result
-
