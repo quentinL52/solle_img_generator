@@ -5,7 +5,7 @@ from google.generativeai import types
 from .config import load_prompt_template
 
 
-class ImgGenerator:
+class imggenrator:
     def __init__(self):
         self.api_key = os.getenv("IMG_GEN_API_KEY")
         self.model_name = os.getenv("MODEL", "gemini-1.5-flash")
@@ -41,3 +41,4 @@ class ImgGenerator:
                             print(part.text)
 
         return generated_images_data
+
